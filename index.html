@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Participants Frontend</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .clearfix {
+            clear: both !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <div class="clearfix"><br></div>
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col">
+                <table class="table table-bordered">
+                    <thead>
+
+                        <tr>
+                            <th colspan="4">
+                                Participants
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary" @click="sortById()">Sort</button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Name" v-model="name">
+                                    <button class="btn btn-primary" type="button" @click="filterByName(name)">Filter</button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-primary" @click="sortByAge()">Sort</button>
+                                </div>
+                            </th>
+
+                            <th>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-primary" @click="sortByCountry()">Sort</button>
+                                </div>
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Country</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="participant in participants">
+                            <td>{{ participant.id }}</td>
+                            <td>{{ participant.name }}</td>
+                            <td>{{ participant.age }}</td>
+                            <td>
+                                {{ participant.country }}
+                                <button class="btn btn-danger float-end" @click="deleteParticipant(participant.id)">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        Add Participant
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <label for="pName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="pName" v-model="pName">
+                        </div>
+                        <div>
+                            <label for="pName" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="pAge" v-model="pAge">
+                        </div>
+                        <div>
+                            <label for="pName" class="form-label">Country</label>
+                            <input type="text" class="form-control" id="pCountry" v-model="pCountry">
+                        </div>
+                        <div class="clearfix"><br></div>
+                        <div>
+                            <button class="btn btn-primary btn-lg w-100" @click="createParticipant()">
+                                Create
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const endpoint = 'https://yue001-dat-cd-evg2h7e2cwcddbad.northeurope-01.azurewebsites.net/api/';
+
+    Vue.createApp({
+        data() {
+            return {
+
+                // Participants
+                allParticipants: [],
+                participants: [],
+
+                // Create
+                pName: null,
+                pAge: null,
+                pCountry: null,
+
+                //Filter
+                name: null,
+            }
+        },
+
+        created() {
+
+            this.getAllParticipants();
+
+        },
+
+        methods: {
+
+            getAllParticipants()
+            {
+                axios.get(endpoint + 'participant')
+                    .then(response => {
+                        this.allParticipants = response.data;
+                        this.participants = response.data;
+                    })
+            },
+
+            createParticipant()
+            {
+                const participantData = {
+                    name: this.pName,
+                    age: this.pAge,
+                    country: this.pCountry
+                };
+
+                axios.post(endpoint + 'participant', participantData)
+                    .then(response => {
+                        this.getAllParticipants();
+                    });
+            },
+
+            deleteParticipant(id)
+            {
+                axios.delete(endpoint + 'participant/'+id)
+                    .then(response => {
+                        this.getAllParticipants();
+                    });
+            },
+
+            /**
+             * Filter Functions
+             * @param name
+             */
+            filterByName(name) {
+                this.participants = this.allParticipants.filter(b => b.name.includes(name));
+            },
+
+            sortById() {
+                this.participants.sort((part1, part2) => part1.id + part2.id);
+            },
+
+            sortByAge() {
+                this.participants.sort((part1, part2) => part1.age + part2.age);
+            },
+
+            sortByCountry() {
+                this.participants.sort((part1, part2) => part1.country.localeCompare(part2.country))
+            },
+
+        }
+    }).mount("#app")
+
+</script>
+</body>
+</html>
